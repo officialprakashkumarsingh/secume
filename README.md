@@ -4,34 +4,255 @@ Secume is a modern Flutter messaging application with advanced features includin
 
 ## ✨ Recent Updates & New Features
 
-### 🤖 Visual Bot Builder (Replacing JavaScript Engine)
-- **Completely removed Flutter JS dependency** - No more JavaScript execution issues
-- **Visual drag-and-drop bot creation** - Create powerful bots without coding
-- **JSON-based configuration** - Modern, secure, and reliable bot engine
-- **Multiple trigger types**: Exact match, Contains, Starts with, Ends with
-- **Dynamic placeholders**: `{user_message}`, `{time}`, `{date}`, `{timestamp}`
-- **Pre-built templates**: Echo Bot, Info Bot, AI Chatbot templates
-- **Advanced rule management**: Reorderable, expandable rule cards
-- **Template system**: Quick-start templates for common bot types
+### 🤖 Enhanced Visual Bot Builder
+- **Advanced API-Connected Templates** - Create powerful bots with external API integrations
+- **AI Assistant Template** - OpenAI-compatible endpoints for intelligent responses
+- **Weather Bot** - Real-time weather data integration
+- **News Bot** - Latest headlines and news updates
+- **Crypto Bot** - Cryptocurrency prices and market data
+- **Quote Bot** - Inspirational quotes and daily motivation
+- **Improved Template System** - Professional bot templates with proper API documentation
 
-### 🎨 Dynamic Theme System
-- **Light & Dark theme support** - Automatic system theme detection
-- **Seamless theme switching** - Follows system preferences
-- **Consistent color schemes** - All components support both themes
-- **Improved accessibility** - Better contrast ratios for both themes
+### 🎨 Enhanced Theme System
+- **Fixed Light Theme Issues** - Status bar, navigation bar, and inputs now properly adapt
+- **Theme-Aware Components** - All UI elements respect light/dark theme preferences
+- **Improved Accessibility** - Better contrast and visibility in both themes
+- **Dynamic System UI** - Status and navigation bars adapt to current theme
 
-### 💬 Enhanced Real-Time Messaging
-- **Fixed message update issues** - Messages appear instantly during chat
-- **Improved real-time synchronization** - No more delayed message display
-- **Better error handling** - Robust message delivery system
-- **Immediate UI feedback** - Messages show instantly before server confirmation
-- **Enhanced bot responses** - Instant bot message delivery
+### 💬 Improved Real-Time Messaging
+- **Instant Message Updates** - Messages appear immediately without manual refresh
+- **Silent Background Refresh** - Real-time updates without loading indicators
+- **Enhanced Bot Responses** - Immediate bot message delivery and processing
+- **Better Performance** - Optimized message streaming and UI updates
 
-### 🔧 Technical Improvements
-- **Removed problematic dependencies** - No more flutter_js issues
-- **Better performance** - JSON processing is faster than JS execution
-- **Enhanced security** - No code execution vulnerabilities
-- **Improved reliability** - Stable bot creation and execution
+### 🔧 Bug Fixes
+- **Fixed Bot Creation Issues** - Resolved bot creation failures
+- **Light Theme Input Fields** - Search, group creation, and modal inputs now use proper theming
+- **Real-Time Chat Updates** - Messages now update instantly in individual, group, and bot chats
+
+## 📱 Android Configuration Updates
+
+### Android Manifest (android/app/src/main/AndroidManifest.xml)
+
+Add these permissions for enhanced functionality:
+
+```xml
+<!-- Internet permission for API calls -->
+<uses-permission android:name="android.permission.INTERNET" />
+
+<!-- Network state permission for connectivity checks -->
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+<!-- Wake lock for real-time messaging -->
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+
+<!-- Foreground service for background messaging -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+<!-- Notification permissions for message alerts -->
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+<!-- Camera and storage for media sharing (optional) -->
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```
+
+Update the application theme in AndroidManifest.xml:
+
+```xml
+<application
+    android:label="Secume"
+    android:name="${applicationName}"
+    android:icon="@mipmap/ic_launcher"
+    android:theme="@style/LaunchTheme">
+    
+    <!-- Add these for proper theme handling -->
+    <meta-data
+        android:name="io.flutter.embedding.android.NormalTheme"
+        android:resource="@style/NormalTheme" />
+    
+    <activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:launchMode="singleTop"
+        android:theme="@style/LaunchTheme"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+        android:hardwareAccelerated="true"
+        android:windowSoftInputMode="adjustResize">
+        
+        <!-- Enable proper status bar handling -->
+        <meta-data
+            android:name="io.flutter.embedding.android.SplashScreenDrawable"
+            android:resource="@drawable/launch_background" />
+            
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+    </activity>
+    
+    <!-- Don't delete the meta-data below -->
+    <meta-data
+        android:name="flutterEmbedding"
+        android:value="2" />
+</application>
+```
+
+## 📦 Dependencies (pubspec.yaml)
+
+Add these dependencies for enhanced bot functionality:
+
+```yaml
+name: secume
+description: Advanced messaging app with visual bot builder
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Core dependencies
+  supabase_flutter: ^2.3.4
+  google_fonts: ^6.1.0
+  
+  # HTTP and API calls for bot integrations
+  http: ^1.1.0
+  dio: ^5.4.0  # Advanced HTTP client for API bots
+  
+  # JSON handling for bot configurations
+  json_annotation: ^4.8.1
+  
+  # Real-time messaging enhancements
+  web_socket_channel: ^2.4.0
+  
+  # Local storage for bot configs
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # UI enhancements
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  
+  # Permissions for Android
+  permission_handler: ^11.2.0
+  
+  # Network connectivity
+  connectivity_plus: ^5.0.2
+  
+  # Image handling (optional for bot avatars)
+  cached_network_image: ^3.3.1
+  
+  # Date/time formatting for bot responses
+  intl: ^0.19.0
+  
+  # UUID generation for bot IDs
+  uuid: ^4.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
+  # JSON code generation
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  
+  # Hive code generation
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  
+  # Add custom fonts for better theming
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-Regular.ttf
+        - asset: assets/fonts/Manrope-Bold.ttf
+          weight: 700
+    
+  # Assets for bot templates
+  assets:
+    - assets/images/
+    - assets/bot_templates/
+```
+
+## 🤖 Bot API Integration Guide
+
+### Setting Up API Keys
+
+Create a `.env` file in your project root:
+
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# Weather API
+OPENWEATHER_API_KEY=your_openweather_api_key_here
+
+# News API
+NEWS_API_KEY=your_news_api_key_here
+
+# Other API keys as needed
+COINGECKO_API_KEY=your_coingecko_api_key_here
+```
+
+### Bot Template Configuration
+
+Each bot template includes:
+- **API endpoint configuration**
+- **Authentication setup**
+- **Response formatting**
+- **Error handling**
+- **Rate limiting considerations**
+
+### Example API Integration
+
+For the AI Assistant bot, configure your OpenAI-compatible endpoint:
+
+```dart
+// In your bot configuration
+{
+  "type": "ai_assistant",
+  "api_config": {
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "model": "gpt-3.5-turbo",
+    "max_tokens": 150,
+    "temperature": 0.7
+  }
+}
+```
+
+## 🚀 Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd secume
+   ```
+
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Configure Supabase**
+   - Update the Supabase URL and anon key in `main.dart`
+   - Run the SQL commands provided above in your Supabase dashboard
+
+4. **Run the app**
+   ```bash
+   flutter run
+   ```
 
 ## 🗂️ Database Schema Updates
 
@@ -44,403 +265,76 @@ ALTER TABLE bots ADD COLUMN IF NOT EXISTS json_config TEXT;
 -- For existing bots, you can set a default JSON config
 UPDATE bots SET json_config = '{"type":"visual_bot","version":"1.0","rules":[],"default_response":"Bot is being updated to new format."}' WHERE json_config IS NULL;
 
--- Optional: Remove old js_code column after migration (CAREFUL - backup first!)
--- ALTER TABLE bots DROP COLUMN IF EXISTS js_code;
+-- Add API configuration support for advanced bots
+ALTER TABLE bots ADD COLUMN IF NOT EXISTS api_config JSONB;
+
+-- Add bot usage statistics
+ALTER TABLE bots ADD COLUMN IF NOT EXISTS usage_count INTEGER DEFAULT 0;
+ALTER TABLE bots ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMP WITH TIME ZONE;
 
 -- Ensure proper indexing for bot searches
 CREATE INDEX IF NOT EXISTS idx_bots_username ON bots(username);
-CREATE INDEX IF NOT EXISTS idx_bots_public ON bots(is_public);
-CREATE INDEX IF NOT EXISTS idx_bots_creator ON bots(creator_id);
+CREATE INDEX IF NOT EXISTS idx_bots_is_public ON bots(is_public);
+CREATE INDEX IF NOT EXISTS idx_bots_creator_id ON bots(creator_id);
 
--- Add any missing columns for enhanced functionality
-ALTER TABLE chats ADD COLUMN IF NOT EXISTS last_message_at TIMESTAMP WITH TIME ZONE;
-ALTER TABLE chats ADD COLUMN IF NOT EXISTS last_message TEXT;
+-- Add message type support for bot responses
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS message_type VARCHAR(50) DEFAULT 'text';
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS metadata JSONB;
 
--- Create user preferences table for theme and settings
-CREATE TABLE IF NOT EXISTS user_preferences (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    theme_mode TEXT DEFAULT 'system' CHECK (theme_mode IN ('light', 'dark', 'system')),
-    notifications_enabled BOOLEAN DEFAULT true,
-    sound_enabled BOOLEAN DEFAULT true,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id)
-);
-
--- Create user status table for online/offline status
-CREATE TABLE IF NOT EXISTS user_status (
-    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    is_online BOOLEAN DEFAULT false,
-    last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create typing indicators table
-CREATE TABLE IF NOT EXISTS typing_indicators (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    is_typing BOOLEAN DEFAULT false,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(chat_id, user_id)
-);
-
--- Create user chat preferences for pinning
-CREATE TABLE IF NOT EXISTS user_chat_preferences (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
-    is_pinned BOOLEAN DEFAULT false,
-    notifications_enabled BOOLEAN DEFAULT true,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id, chat_id)
-);
-
--- Add proper RLS (Row Level Security) policies
-ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_status ENABLE ROW LEVEL SECURITY;
-ALTER TABLE typing_indicators ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_chat_preferences ENABLE ROW LEVEL SECURITY;
-
--- RLS Policies for user_preferences
-CREATE POLICY "Users can view own preferences" ON user_preferences
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own preferences" ON user_preferences
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own preferences" ON user_preferences
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- RLS Policies for user_status
-CREATE POLICY "Users can view all user status" ON user_status
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can update own status" ON user_status
-    FOR ALL USING (auth.uid() = user_id);
-
--- RLS Policies for typing_indicators
-CREATE POLICY "Users can view typing in their chats" ON typing_indicators
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM chats 
-            WHERE chats.id = typing_indicators.chat_id 
-            AND auth.uid() = ANY(chats.participant_ids)
-        )
-    );
-
-CREATE POLICY "Users can manage own typing indicators" ON typing_indicators
-    FOR ALL USING (auth.uid() = user_id);
-
--- RLS Policies for user_chat_preferences
-CREATE POLICY "Users can manage own chat preferences" ON user_chat_preferences
-    FOR ALL USING (auth.uid() = user_id);
-
--- Add indexes for performance
-CREATE INDEX IF NOT EXISTS idx_user_status_online ON user_status(is_online);
-CREATE INDEX IF NOT EXISTS idx_typing_indicators_chat ON typing_indicators(chat_id);
-CREATE INDEX IF NOT EXISTS idx_user_chat_preferences_user ON user_chat_preferences(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_chat_preferences_pinned ON user_chat_preferences(user_id, is_pinned);
-
--- Update functions for automatic timestamp updates
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Add triggers for automatic timestamp updates
-DROP TRIGGER IF EXISTS update_user_preferences_updated_at ON user_preferences;
-CREATE TRIGGER update_user_preferences_updated_at 
-    BEFORE UPDATE ON user_preferences 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS update_user_status_updated_at ON user_status;
-CREATE TRIGGER update_user_status_updated_at 
-    BEFORE UPDATE ON user_status 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS update_typing_indicators_updated_at ON typing_indicators;
-CREATE TRIGGER update_typing_indicators_updated_at 
-    BEFORE UPDATE ON typing_indicators 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS update_user_chat_preferences_updated_at ON user_chat_preferences;
-CREATE TRIGGER update_user_chat_preferences_updated_at 
-    BEFORE UPDATE ON user_chat_preferences 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Real-time messaging improvements
+CREATE INDEX IF NOT EXISTS idx_messages_chat_timestamp ON messages(chat_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
 ```
 
-## 📱 Features
+## 🎯 Features Overview
 
-### Core Messaging
-- ✅ Real-time messaging with instant delivery
-- ✅ Group chats with admin controls
-- ✅ Direct messaging
-- ✅ Message status indicators
-- ✅ Typing indicators
-- ✅ Online/offline status
-- ✅ Chat pinning
-- ✅ Message timestamps
+### Core Features
+- **Real-time messaging** with instant updates
+- **Group chats** with advanced management
+- **Visual bot builder** with drag-and-drop interface
+- **Dark/Light theme** with system integration
+- **User presence** and typing indicators
+- **Message history** and search
 
-### Bot System
-- ✅ **Visual Bot Builder** - No coding required
-- ✅ **Multiple trigger types** - Exact, Contains, Starts with, Ends with
-- ✅ **Dynamic responses** - Placeholders for user input, time, date
-- ✅ **Bot templates** - Pre-built bot configurations
-- ✅ **Rule management** - Drag and drop rule reordering
-- ✅ **Public/Private bots** - Share bots with community or keep private
-- ✅ **Bot search and discovery** - Find bots created by other users
+### Advanced Bot Features
+- **API Integration Templates** for external services
+- **OpenAI Compatible** endpoints for AI responses
+- **Weather Integration** with real-time data
+- **News API** for latest headlines
+- **Cryptocurrency** prices and market data
+- **Quote System** for daily inspiration
+- **Custom Rule Engine** with multiple trigger types
 
-### User Interface
-- ✅ **Dynamic theming** - Light/Dark mode with system detection
-- ✅ **Modern Material Design** - Beautiful, consistent UI
-- ✅ **Responsive design** - Works on all screen sizes
-- ✅ **Smooth animations** - Polished user experience
-- ✅ **Accessible design** - High contrast, readable fonts
+### Technical Features
+- **Flutter 3.0+** with modern widgets
+- **Supabase Backend** for real-time data
+- **Material Design 3** with dynamic theming
+- **Responsive UI** for all screen sizes
+- **Offline Support** with local caching
+- **Performance Optimized** with lazy loading
 
-### Security & Privacy
-- ✅ **Row Level Security (RLS)** - Database-level security
-- ✅ **Authenticated users only** - Secure user system
-- ✅ **Privacy controls** - Granular privacy settings
-- ✅ **Secure bot execution** - No code execution vulnerabilities
+## 🛠️ Development Notes
 
-## 🚀 Getting Started
+### Bot Creation Debug
+If bot creation fails, check:
+1. Supabase connection and authentication
+2. Database permissions for the `bots` table
+3. JSON configuration validity
+4. Username uniqueness constraints
 
-### Prerequisites
-- Flutter SDK (latest stable version)
-- Dart SDK
-- Supabase account
-- Android Studio / VS Code
+### Theme Issues
+For theme-related problems:
+1. Ensure `SystemChrome.setSystemUIOverlayStyle` is called after build context is available
+2. Check that all custom colors use `Theme.of(context).colorScheme`
+3. Verify input decorations use theme-aware colors
 
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd secume
-```
-
-2. **Install dependencies**
-```bash
-flutter pub get
-```
-
-3. **Configure Supabase**
-   - Update the Supabase URL and anon key in `main.dart`
-   - Run the SQL commands provided above in your Supabase SQL editor
-
-4. **Run the app**
-```bash
-flutter run
-```
-
-## 🔧 Configuration
-
-### Supabase Setup
-1. Create a new Supabase project
-2. Run all SQL commands from the "Database Schema Updates" section
-3. Enable Row Level Security on all tables
-4. Update the connection details in `main.dart`
-
-### Environment Variables
-Update these values in `main.dart`:
-```dart
-await Supabase.initialize(
-  url: 'YOUR_SUPABASE_URL',
-  anonKey: 'YOUR_SUPABASE_ANON_KEY',
-);
-```
-
-## 🤖 Bot Builder Guide
-
-### Creating Your First Bot
-
-1. **Access Bot Builder**
-   - Search "@bots" in the user search
-   - Or use the floating action button in the "My Bots" tab
-
-2. **Choose a Template**
-   - **Echo Bot**: Simple bot that repeats user messages
-   - **Info Bot**: Provides time and date information
-   - **AI Chatbot**: Advanced conversational template
-
-3. **Add Rules**
-   - Click "Add Rule" to create new response rules
-   - Set triggers (words/phrases that activate the rule)
-   - Choose trigger type (Exact, Contains, Starts with, Ends with)
-   - Write the bot's response
-
-4. **Use Placeholders**
-   - `{user_message}` - The user's original message
-   - `{time}` - Current time (HH:MM:SS)
-   - `{date}` - Current date (YYYY-MM-DD)
-   - `{timestamp}` - Unix timestamp
-
-5. **Test Your Bot**
-   - Save the bot and start a chat with it
-   - Test different triggers and responses
-
-### Bot Examples
-
-#### Simple Greeting Bot
-```json
-{
-  "type": "visual_bot",
-  "version": "1.0",
-  "rules": [
-    {
-      "id": "greeting",
-      "name": "Greeting",
-      "triggers": ["hello", "hi", "hey"],
-      "type": "contains",
-      "response": "Hello! 👋 How can I help you today?"
-    }
-  ],
-  "default_response": "I didn't understand that. Try saying 'hello'!"
-}
-```
-
-#### Information Bot
-```json
-{
-  "type": "visual_bot",
-  "version": "1.0",
-  "rules": [
-    {
-      "id": "time",
-      "name": "Time Request",
-      "triggers": ["time", "what time"],
-      "type": "contains",
-      "response": "Current time: {time} 🕒"
-    },
-    {
-      "id": "date",
-      "name": "Date Request", 
-      "triggers": ["date", "today"],
-      "type": "contains",
-      "response": "Today is: {date} 📅"
-    }
-  ],
-  "default_response": "Ask me about time or date!"
-}
-```
-
-## 🎨 Theming
-
-The app automatically detects and follows your system theme preferences:
-
-- **Light Theme**: Clean, bright interface with high contrast
-- **Dark Theme**: Easy on the eyes with OLED-friendly colors
-- **System Auto**: Automatically switches based on device settings
-
-### Color Scheme
-- **Primary Color**: `#00ADB5` (Teal)
-- **Dark Background**: `#222831` (Dark Gray)
-- **Light Background**: `#F8F9FA` (Light Gray)
-- **Surface Dark**: `#393E46` (Medium Gray)
-- **Surface Light**: `#FFFFFF` (White)
-
-## 📞 Troubleshooting
-
-### Common Issues
-
-1. **Messages not updating in real-time**
-   - Check internet connection
-   - Verify Supabase connection
-   - Restart the app
-
-2. **Bot creation fails**
-   - Ensure all required fields are filled
-   - Check username uniqueness
-   - Verify JSON configuration is valid
-
-3. **Theme not switching**
-   - Close and reopen the app
-   - Check system theme settings
-   - Verify device supports automatic theme switching
-
-### Performance Tips
-
-1. **Optimize bot rules**
-   - Keep trigger lists short and specific
-   - Avoid overlapping triggers
-   - Use appropriate trigger types
-
-2. **Chat performance**
-   - Large group chats may load slowly
-   - Consider archiving old conversations
-   - Limit message history when possible
-
-## 🔄 Migration Guide
-
-### From JavaScript Bots to Visual Bots
-
-If you have existing JavaScript-based bots, you'll need to recreate them using the visual builder:
-
-1. **Export bot logic**: Note down your JavaScript bot's behavior
-2. **Create new visual bot**: Use the visual builder to recreate the logic
-3. **Test thoroughly**: Ensure the new bot behaves as expected
-4. **Update references**: Update any saved bot references
-
-### Database Migration
-
-Run the provided SQL commands to update your database schema. The app maintains backward compatibility during the transition period.
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these guidelines:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**: Follow the existing code style
-4. **Test thoroughly**: Ensure all features work
-5. **Commit changes**: `git commit -m 'Add amazing feature'`
-6. **Push to branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**: Describe your changes
-
-### Code Style
-
-- Follow Dart/Flutter conventions
-- Use meaningful variable names
-- Add comments for complex logic
-- Keep functions small and focused
-- Use const constructors where possible
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Real-time Messaging
+For messaging issues:
+1. Check Supabase real-time subscriptions
+2. Verify message stream listeners are properly set up
+3. Ensure UI updates happen on the main thread
+4. Check for proper error handling in message sending
 
 ## 📞 Support
 
-If you encounter any issues or have questions:
-
-1. **Check the troubleshooting section** above
-2. **Search existing issues** in the repository
-3. **Create a new issue** with detailed information
-4. **Include logs and screenshots** when reporting bugs
-
-## 🗺️ Roadmap
-
-### Upcoming Features
-
-- 🔄 **Voice Messages**: Record and send voice notes
-- 📁 **File Sharing**: Share documents, images, and files
-- 🔐 **End-to-End Encryption**: Enhanced message security
-- 📱 **Push Notifications**: Real-time message notifications
-- 🌐 **Web Version**: Access Secume from any browser
-- 🤖 **AI Integration**: Advanced AI-powered bots
-- 📊 **Analytics Dashboard**: Bot performance metrics
-- 🎮 **Interactive Bots**: Bots with buttons and rich interfaces
-
-### Version History
-
-- **v2.0.0**: Visual Bot Builder, Dynamic Themes, Enhanced Real-time Messaging
-- **v1.0.0**: Initial release with basic messaging and JavaScript bots
-
----
-
-**Made with ❤️ using Flutter and Supabase**
+For issues and feature requests, please check the existing issues or create a new one with detailed information about the problem and steps to reproduce.

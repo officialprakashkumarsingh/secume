@@ -178,12 +178,12 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
               decoration: InputDecoration(
                 hintText: 'Search users, bots, or @groupname to join...',
                 filled: true,
-                fillColor: const Color(0xFF393E46),
+                fillColor: Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
               onSubmitted: (value) {
@@ -460,7 +460,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _messageSubscription?.cancel();
     _typingSubscription?.cancel();
 
-    // Listen for new messages with immediate UI update
+    // Listen for new messages with immediate UI update and silent refresh
     _messageSubscription = SupabaseService.getMessageStream(widget.chatId).listen(
       (newMessage) {
         if (mounted) {
@@ -475,9 +475,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             // Sort messages by timestamp to ensure correct order
             _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
           });
-          // Immediate scroll to bottom for better UX
+          // Immediate scroll to bottom for better UX (silent, no loading indicator)
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _scrollToBottom();
+            if (mounted) {
+              _scrollToBottom();
+              // Silent refresh completed - no visual feedback needed
+            }
           });
         }
       },
@@ -1653,7 +1656,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
   void _showChatOptions(Chat chat) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF393E46),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2163,14 +2166,30 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Group Name'),
+                decoration: InputDecoration(
+                  labelText: 'Group Name',
+                  labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: usernameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Username',
                   prefixText: '@',
+                  labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

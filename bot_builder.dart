@@ -67,6 +67,142 @@ class _VisualBotBuilderScreenState extends State<VisualBotBuilderScreen> {
     ];
   }
 
+  void _loadAdvancedTemplate(String templateType) {
+    switch (templateType) {
+      case 'echo_bot':
+        _nameController.text = 'Echo Bot';
+        _usernameController.text = 'echo_bot_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'A simple bot that echoes your messages';
+        _defaultResponseController.text = 'You said: "{user_message}" 💬';
+        _rules = [
+          BotRule(
+            id: 'echo',
+            name: 'Echo Everything',
+            triggers: [''],
+            type: TriggerType.contains,
+            response: 'Echo: {user_message}',
+          ),
+        ];
+        break;
+        
+      case 'weather_bot':
+        _nameController.text = 'Weather Bot';
+        _usernameController.text = 'weather_bot_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'Get weather information for any city';
+        _defaultResponseController.text = 'I can help you with weather information! Try asking "weather in [city name]"';
+        _rules = [
+          BotRule(
+            id: 'weather',
+            name: 'Weather Query',
+            triggers: ['weather in', 'weather for', 'how is weather'],
+            type: TriggerType.contains,
+            response: '🌤️ Weather for your location:\n\nAPI: https://api.openweathermap.org/data/2.5/weather?q={location}&appid=YOUR_API_KEY\n\n📍 Location: {user_message}\n🌡️ Temperature: Loading...\n💨 Wind: Loading...\n☁️ Conditions: Loading...\n\n*Note: Replace YOUR_API_KEY with actual API key*',
+          ),
+          BotRule(
+            id: 'weather_help',
+            name: 'Weather Help',
+            triggers: ['weather help', 'how to weather'],
+            type: TriggerType.contains,
+            response: '🌤️ Weather Bot Help:\n\n• "weather in [city]" - Get current weather\n• "weather for [city]" - Get weather forecast\n• Example: "weather in New York"',
+          ),
+        ];
+        break;
+        
+      case 'ai_assistant':
+        _nameController.text = 'AI Assistant';
+        _usernameController.text = 'ai_assistant_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'AI-powered assistant using OpenAI compatible endpoints';
+        _defaultResponseController.text = 'Hello! I\'m your AI assistant. Ask me anything!';
+        _rules = [
+          BotRule(
+            id: 'ai_query',
+            name: 'AI Processing',
+            triggers: [''],
+            type: TriggerType.contains,
+            response: '🤖 AI Assistant Response:\n\nAPI Endpoint: https://api.openai.com/v1/chat/completions\nModel: gpt-3.5-turbo\n\nProcessing: "{user_message}"\n\n*This bot connects to OpenAI API*\n*Replace with your actual API configuration*\n\nResponse: AI processing your request...',
+          ),
+          BotRule(
+            id: 'ai_help',
+            name: 'AI Help',
+            triggers: ['help', 'what can you do'],
+            type: TriggerType.contains,
+            response: '🤖 AI Assistant Capabilities:\n\n• Answer questions\n• Help with coding\n• Explain concepts\n• Creative writing\n• Problem solving\n• And much more!\n\nJust type your question and I\'ll help!',
+          ),
+        ];
+        break;
+        
+      case 'news_bot':
+        _nameController.text = 'News Bot';
+        _usernameController.text = 'news_bot_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'Latest news and updates from various sources';
+        _defaultResponseController.text = 'Stay updated with the latest news! Try "latest news" or "news about [topic]"';
+        _rules = [
+          BotRule(
+            id: 'latest_news',
+            name: 'Latest News',
+            triggers: ['latest news', 'news today', 'current news'],
+            type: TriggerType.contains,
+            response: '📰 Latest News Headlines:\n\nAPI: https://newsapi.org/v2/top-headlines?apiKey=YOUR_API_KEY\n\n🔥 Breaking: Loading headlines...\n📈 Business: Loading...\n⚽ Sports: Loading...\n🌍 World: Loading...\n\n*Connect to NewsAPI for real-time updates*',
+          ),
+          BotRule(
+            id: 'topic_news',
+            name: 'Topic News',
+            triggers: ['news about', 'news on'],
+            type: TriggerType.contains,
+            response: '📰 News about "{user_message}":\n\nSearching for: {user_message}\nAPI: https://newsapi.org/v2/everything?q={topic}&apiKey=YOUR_API_KEY\n\n📄 Results loading...\n\n*Configure with your NewsAPI key*',
+          ),
+        ];
+        break;
+        
+      case 'crypto_bot':
+        _nameController.text = 'Crypto Bot';
+        _usernameController.text = 'crypto_bot_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'Get cryptocurrency prices and market data';
+        _defaultResponseController.text = 'Get real-time crypto prices! Try "price of bitcoin" or "crypto BTC"';
+        _rules = [
+          BotRule(
+            id: 'crypto_price',
+            name: 'Crypto Price',
+            triggers: ['price of', 'crypto', 'bitcoin', 'ethereum', 'BTC', 'ETH'],
+            type: TriggerType.contains,
+            response: '💰 Cryptocurrency Prices:\n\nAPI: https://api.coingecko.com/api/v3/simple/price\n\n₿ Bitcoin (BTC): Loading...\n⟠ Ethereum (ETH): Loading...\n🔍 Searching: {user_message}\n\n📈 24h Change: Loading...\n💹 Market Cap: Loading...\n\n*Real-time data from CoinGecko API*',
+          ),
+          BotRule(
+            id: 'crypto_help',
+            name: 'Crypto Help',
+            triggers: ['crypto help', 'supported coins'],
+            type: TriggerType.contains,
+            response: '💰 Crypto Bot Commands:\n\n• "price of bitcoin" - Get BTC price\n• "crypto ETH" - Get Ethereum price\n• "price of [any coin]" - Get any crypto price\n\n🔗 Powered by CoinGecko API',
+          ),
+        ];
+        break;
+        
+      case 'quote_bot':
+        _nameController.text = 'Quote Bot';
+        _usernameController.text = 'quote_bot_${DateTime.now().millisecondsSinceEpoch}';
+        _descriptionController.text = 'Inspirational quotes and daily motivation';
+        _defaultResponseController.text = 'Get inspired! Try "daily quote", "motivational quote", or "quote about [topic]"';
+        _rules = [
+          BotRule(
+            id: 'daily_quote',
+            name: 'Daily Quote',
+            triggers: ['daily quote', 'quote of the day', 'inspire me'],
+            type: TriggerType.contains,
+            response: '✨ Daily Inspiration:\n\n"The only way to do great work is to love what you do."\n- Steve Jobs\n\nAPI: https://api.quotable.io/random\n\n💫 Generated at: {time} on {date}\n🎯 Category: Motivation\n\n*Connected to Quotable API for fresh quotes*',
+          ),
+          BotRule(
+            id: 'topic_quote',
+            name: 'Topic Quote',
+            triggers: ['quote about', 'quotes on'],
+            type: TriggerType.contains,
+            response: '💭 Quote about "{user_message}":\n\nAPI: https://api.quotable.io/quotes?tags={topic}\n\nSearching for wisdom about: {user_message}\n\n"Loading inspirational quote..."\n- Author\n\n🔍 Topic: {user_message}\n⏰ {time}',
+          ),
+        ];
+        break;
+    }
+    setState(() {});
+  }
+
   String _generateBotConfig() {
     final config = {
       'type': 'visual_bot',
@@ -90,6 +226,20 @@ class _VisualBotBuilderScreenState extends State<VisualBotBuilderScreen> {
         const SnackBar(content: Text('Please enter a username')),
       );
       return;
+    }
+
+    // Validate username format
+    if (widget.editBot == null) {
+      final username = _usernameController.text.trim();
+      if (!RegExp(r'^[a-zA-Z0-9_]{3,20}$').hasMatch(username)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Username must be 3-20 characters and contain only letters, numbers, and underscores'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
@@ -122,19 +272,33 @@ class _VisualBotBuilderScreenState extends State<VisualBotBuilderScreen> {
 
       if (result != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bot ${widget.editBot != null ? 'updated' : 'created'} successfully!')),
+          SnackBar(
+            content: Text('Bot ${widget.editBot != null ? 'updated' : 'created'} successfully! 🤖'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.of(context).pop();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to ${widget.editBot != null ? 'update' : 'create'} bot')),
+          SnackBar(
+            content: Text('Failed to ${widget.editBot != null ? 'update' : 'create'} bot. Check console for details.'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: _saveBot,
+            ),
+          ),
         );
       }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }
@@ -159,30 +323,80 @@ class _VisualBotBuilderScreenState extends State<VisualBotBuilderScreen> {
   }
 
   void _showTemplateDialog() {
-    final templates = BotEngine.getBotTemplates();
+    final advancedTemplates = [
+      {'key': 'echo_bot', 'name': '🔄 Echo Bot', 'description': 'Simple bot that echoes user messages', 'category': 'Basic'},
+      {'key': 'ai_assistant', 'name': '🤖 AI Assistant', 'description': 'OpenAI-powered chatbot with advanced capabilities', 'category': 'AI/API'},
+      {'key': 'weather_bot', 'name': '🌤️ Weather Bot', 'description': 'Get real-time weather information', 'category': 'API'},
+      {'key': 'news_bot', 'name': '📰 News Bot', 'description': 'Latest news and headlines', 'category': 'API'},
+      {'key': 'crypto_bot', 'name': '💰 Crypto Bot', 'description': 'Cryptocurrency prices and market data', 'category': 'API'},
+      {'key': 'quote_bot', 'name': '✨ Quote Bot', 'description': 'Inspirational quotes and daily motivation', 'category': 'API'},
+    ];
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Choose Template'),
+        title: const Text('🚀 Advanced Bot Templates'),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: templates.length,
-            itemBuilder: (context, index) {
-              final templateKey = templates.keys.elementAt(index);
-              final template = templates[templateKey]!;
-              
-              return ListTile(
-                title: Text(template['name'] as String),
-                subtitle: Text(template['description'] as String),
-                onTap: () {
-                  Navigator.pop(context);
-                  _loadTemplate(template['config'] as Map<String, dynamic>);
-                },
-              );
-            },
+          height: 400,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Choose from our powerful bot templates with API integrations:',
+                  style: TextStyle(fontSize: 14, color: Colors.blue),
+                ),
+                const SizedBox(height: 16),
+                ...advancedTemplates.map((template) => Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        template['category']!,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(template['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(template['description']!),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _loadAdvancedTemplate(template['key']!);
+                    },
+                  ),
+                )),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'API templates require configuration with actual API keys',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -195,13 +409,7 @@ class _VisualBotBuilderScreenState extends State<VisualBotBuilderScreen> {
     );
   }
 
-  void _loadTemplate(Map<String, dynamic> config) {
-    setState(() {
-      _defaultResponseController.text = config['default_response'] ?? '';
-      final rules = config['rules'] as List<dynamic>? ?? [];
-      _rules = rules.map((rule) => BotRule.fromJson(rule)).toList();
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
