@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'models.dart';
 import 'services.dart';
 import 'main.dart'; // Import for CustomIcon and RobotIconPainter
+import 'bot_builder.dart'; // Import for Visual Bot Builder
 import 'dart:async'; // Added for Timer
 
 // --- User Search Screen with Enhanced Functionality ---
@@ -40,7 +41,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
 
   void _showBotCreationInterface() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const CreateBotScreen()),
+      MaterialPageRoute(builder: (context) => const VisualBotBuilderScreen()),
     );
   }
 
@@ -436,8 +437,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh messages when returning to this screen
-    _refreshMessages();
+    // Force refresh messages when returning to this screen to ensure latest data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshMessages();
+    });
   }
 
   Future<void> _refreshMessages() async {
@@ -457,15 +460,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _messageSubscription?.cancel();
     _typingSubscription?.cancel();
 
-    // Listen for new messages
+    // Listen for new messages with immediate UI update
     _messageSubscription = SupabaseService.getMessageStream(widget.chatId).listen(
       (newMessage) {
-        if (mounted && !_messages.any((m) => m.id == newMessage.id)) {
+        if (mounted) {
+          // Check if message already exists to avoid duplicates
+          final existingIndex = _messages.indexWhere((m) => m.id == newMessage.id);
           setState(() {
-            _messages.add(newMessage);
+            if (existingIndex == -1) {
+              _messages.add(newMessage);
+            } else {
+              _messages[existingIndex] = newMessage; // Update existing message
+            }
+            // Sort messages by timestamp to ensure correct order
+            _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
           });
+          // Immediate scroll to bottom for better UX
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollToBottom();
+            if (mounted) _scrollToBottom();
           });
         }
       },
@@ -558,10 +570,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     final message = await SupabaseService.sendMessage(widget.chatId, messageText);
     if (message != null && mounted) {
-      // Message will be added through real-time listener
-      // Only scroll to bottom
+      // Immediately add message to UI for instant feedback
+      setState(() {
+        if (!_messages.any((m) => m.id == message.id)) {
+          _messages.add(message);
+          _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        }
+      });
+      
+      // Scroll to bottom immediately
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottom();
+        if (mounted) _scrollToBottom();
       });
 
       // If this is a bot chat, send bot response
@@ -600,12 +619,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           messageType: 'bot_response'
         );
         
-              if (botMessage != null && mounted) {
-        // Message will be added through real-time listener
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
-      }
+        if (botMessage != null && mounted) {
+          // Immediately add bot message to UI
+          setState(() {
+            if (!_messages.any((m) => m.id == botMessage.id)) {
+              _messages.add(botMessage);
+              _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            }
+          });
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _scrollToBottom();
+          });
+        }
         return;
       }
       
@@ -617,9 +643,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       );
       
       if (botMessage != null && mounted) {
-        // Message will be added through real-time listener
+        // Immediately add bot message to UI
+        setState(() {
+          if (!_messages.any((m) => m.id == botMessage.id)) {
+            _messages.add(botMessage);
+            _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          }
+        });
+        
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
+          if (mounted) _scrollToBottom();
         });
       }
     } catch (e) {
@@ -638,9 +671,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       );
       
       if (errorMessage != null && mounted) {
-        // Message will be added through real-time listener
+        // Immediately add error message to UI
+        setState(() {
+          if (!_messages.any((m) => m.id == errorMessage.id)) {
+            _messages.add(errorMessage);
+            _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          }
+        });
+        
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
+          if (mounted) _scrollToBottom();
         });
       }
     }
@@ -938,11 +978,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     },
                   ),
           ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF222831), // Use consistent background color
-            ),
+                      Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor, // Use theme background color
+              ),
             child: Row(
               children: [
                 Expanded(
@@ -951,7 +991,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     decoration: InputDecoration(
                       hintText: 'Type a message...',
                       filled: true,
-                      fillColor: const Color(0xFF393E46), // Single consistent color
+                      fillColor: Theme.of(context).brightness == Brightness.dark 
+                          ? const Color(0xFF393E46) 
+                          : const Color(0xFFF5F5F5), // Theme-aware fill color
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
                         borderSide: BorderSide.none,
@@ -1095,10 +1137,10 @@ class _BotManagementScreenState extends State<BotManagementScreen> {
                     title: const Text('Create New Bot (@bots)'),
                     subtitle: const Text('Search "@bots" or tap here to create like BotFather'),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CreateBotScreen()),
-                      ).then((_) => _loadUserBots());
+                              Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VisualBotBuilderScreen()),
+        ).then((_) => _loadUserBots());
                     },
                   ),
                 ),
@@ -1182,12 +1224,12 @@ class _BotManagementScreenState extends State<BotManagementScreen> {
                                   ],
                                   onSelected: (value) {
                                     if (value == 'edit') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => EditBotScreen(bot: bot),
-                                        ),
-                                      ).then((_) => _loadUserBots());
+                                                            Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VisualBotBuilderScreen(editBot: bot),
+                        ),
+                      ).then((_) => _loadUserBots());
                                     } else if (value == 'delete') {
                                       _showDeleteConfirmation(bot);
                                     }
@@ -1221,264 +1263,7 @@ class _BotManagementScreenState extends State<BotManagementScreen> {
   }
 }
 
-// --- Create Bot Screen ---
 
-class CreateBotScreen extends StatefulWidget {
-  const CreateBotScreen({super.key});
-
-  @override
-  State<CreateBotScreen> createState() => _CreateBotScreenState();
-}
-
-class _CreateBotScreenState extends State<CreateBotScreen> {
-  final _nameController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _codeController = TextEditingController();
-  bool _isLoading = false;
-  bool _isPublic = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Set default enhanced bot code
-    _codeController.text = BotEngine.getDefaultBotCode();
-  }
-
-  Future<void> _createBot() async {
-    if (_nameController.text.isEmpty || 
-        _usernameController.text.isEmpty || 
-        _codeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in required fields')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    final bot = await SupabaseService.createBot(
-      _nameController.text.trim(),
-      _usernameController.text.trim(),
-      _codeController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-      isPublic: _isPublic,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (bot != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bot created successfully!')),
-      );
-      Navigator.of(context).pop();
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to create bot. Username might already exist.')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Bot'),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _createBot,
-            child: _isLoading 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(
-                    'Create',
-                    style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CustomIcon(
-                          painter: RobotIconPainter(color: Theme.of(context).primaryColor),
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Bot Creation',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Create your own bot like BotFather! Write JavaScript code to define how your bot responds to messages.',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            _buildTextField(
-              controller: _nameController,
-              label: 'Bot Name *',
-              hint: 'My Awesome Bot',
-            ),
-            const SizedBox(height: 16),
-            
-            _buildTextField(
-              controller: _usernameController,
-              label: 'Username *',
-              hint: 'myawesomebot',
-              prefix: '@',
-            ),
-            const SizedBox(height: 16),
-            
-            _buildTextField(
-              controller: _descriptionController,
-              label: 'Description',
-              hint: 'What does your bot do?',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Switch(
-                  value: _isPublic,
-                  onChanged: (value) => setState(() => _isPublic = value),
-                  activeColor: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text('Make bot public (others can find and use it)'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-            Text(
-              'Bot Code (JavaScript) *',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[600]!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                controller: _codeController,
-                decoration: const InputDecoration(
-                  hintText: 'Write your bot logic here...',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
-                ),
-                maxLines: 15,
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Card(
-              color: Colors.blue.withOpacity(0.1),
-              child: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '💡 Tips:',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '• Your bot must have a "processMessage(userMessage, chatId)" function\n'
-                      '• Return a string response from this function\n'
-                      '• Use JavaScript for logic (if/else, variables, etc.)\n'
-                      '• Test your bot after creation!',
-                      style: TextStyle(color: Colors.blue, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    String? prefix,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixText: prefix,
-            filled: true,
-            fillColor: const Color(0xFF393E46),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          maxLines: maxLines,
-        ),
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _usernameController.dispose();
-    _descriptionController.dispose();
-    _codeController.dispose();
-    super.dispose();
-  }
-}
 
 // --- Create Group Screen ---
 
@@ -1763,229 +1548,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   }
 }
 
-// --- Edit Bot Screen ---
 
-class EditBotScreen extends StatefulWidget {
-  final Bot bot;
-
-  const EditBotScreen({super.key, required this.bot});
-
-  @override
-  State<EditBotScreen> createState() => _EditBotScreenState();
-}
-
-class _EditBotScreenState extends State<EditBotScreen> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _descriptionController;
-  late final TextEditingController _codeController;
-  bool _isLoading = false;
-  late bool _isPublic;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.bot.name);
-    _descriptionController = TextEditingController(text: widget.bot.description ?? '');
-    _codeController = TextEditingController(text: widget.bot.jsCode);
-    _isPublic = widget.bot.isPublic;
-  }
-
-  Future<void> _updateBot() async {
-    if (_nameController.text.isEmpty || _codeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in required fields')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    final updatedBot = await SupabaseService.updateBot(
-      widget.bot.id,
-      name: _nameController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-      jsCode: _codeController.text.trim(),
-      isPublic: _isPublic,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (updatedBot != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bot updated successfully!')),
-      );
-      Navigator.of(context).pop();
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update bot')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit ${widget.bot.name}'),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _updateBot,
-            child: _isLoading 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(
-                    'Save',
-                    style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CustomIcon(
-                          painter: RobotIconPainter(color: Theme.of(context).primaryColor),
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Editing Bot',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Username: @${widget.bot.username}',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            _buildTextField(
-              controller: _nameController,
-              label: 'Bot Name *',
-              hint: 'My Awesome Bot',
-            ),
-            const SizedBox(height: 16),
-            
-            _buildTextField(
-              controller: _descriptionController,
-              label: 'Description',
-              hint: 'What does your bot do?',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Switch(
-                  value: _isPublic,
-                  onChanged: (value) => setState(() => _isPublic = value),
-                  activeColor: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text('Make bot public (others can find and use it)'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-            Text(
-              'Bot Code (JavaScript) *',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[600]!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                controller: _codeController,
-                decoration: const InputDecoration(
-                  hintText: 'Write your bot logic here...',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
-                ),
-                maxLines: 15,
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: const Color(0xFF393E46),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          maxLines: maxLines,
-        ),
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _codeController.dispose();
-    super.dispose();
-  }
-}
 
 // --- Other Required Screens ---
 

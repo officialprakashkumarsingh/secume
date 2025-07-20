@@ -49,7 +49,7 @@ class Bot {
   final String? avatarUrl;
   final String? description;
   final String creatorId;
-  final String jsCode;
+  final String jsonConfig;
   final bool isPublic;
   final DateTime createdAt;
 
@@ -60,7 +60,7 @@ class Bot {
     this.avatarUrl,
     this.description,
     required this.creatorId,
-    required this.jsCode,
+    required this.jsonConfig,
     required this.isPublic,
     required this.createdAt,
   });
@@ -73,7 +73,7 @@ class Bot {
       avatarUrl: json['avatar_url'],
       description: json['description'],
       creatorId: json['creator_id'],
-      jsCode: json['js_code'],
+      jsonConfig: json['json_config'] ?? json['js_code'] ?? '{}', // Backward compatibility
       isPublic: json['is_public'],
       createdAt: DateTime.parse(json['created_at']),
     );
@@ -87,7 +87,7 @@ class Bot {
       'avatar_url': avatarUrl,
       'description': description,
       'creator_id': creatorId,
-      'js_code': jsCode,
+      'json_config': jsonConfig,
       'is_public': isPublic,
       'created_at': createdAt.toIso8601String(),
     };
