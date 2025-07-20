@@ -913,21 +913,53 @@ class SupabaseService {
   static Future<Bot?> createBot(String name, String username, String jsonConfig, {String? description, bool isPublic = true}) async {
     try {
       final currentUser = _client.auth.currentUser;
-      if (currentUser == null) return null;
+      if (currentUser == null) {
+        print('Create bot error: No authenticated user');
+        return null;
+      }
 
-      final botResponse = await _client.from('bots').insert({
-        'name': name,
-        'username': username,
-        'description': description,
+      // Validate inputs
+      if (name.trim().isEmpty) {
+        print('Create bot error: Bot name is empty');
+        return null;
+      }
+      
+      if (username.trim().isEmpty) {
+        print('Create bot error: Bot username is empty');
+        return null;
+      }
+
+      // Check if username already exists
+      final existingBot = await _client
+          .from('bots')
+          .select('username')
+          .eq('username', username.trim())
+          .maybeSingle();
+      
+      if (existingBot != null) {
+        print('Create bot error: Username "$username" already exists');
+        return null;
+      }
+
+      final botData = {
+        'name': name.trim(),
+        'username': username.trim(),
+        'description': description?.trim(),
         'creator_id': currentUser.id,
         'json_config': jsonConfig,
         'is_public': isPublic,
         'created_at': DateTime.now().toIso8601String(),
-      }).select().single();
+      };
 
+      print('Creating bot with data: ${botData.toString()}');
+
+      final botResponse = await _client.from('bots').insert(botData).select().single();
+
+      print('Bot created successfully: ${botResponse.toString()}');
       return Bot.fromJson(botResponse);
     } catch (e) {
-      print('Create bot error: $e');
+      print('Create bot error details: $e');
+      print('Stack trace: ${StackTrace.current}');
       return null;
     }
   }

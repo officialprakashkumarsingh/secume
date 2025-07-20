@@ -167,13 +167,16 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   void initState() {
     super.initState();
-    // Set system chrome navigation bar color
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Color(0xFF222831),
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF222831),
-      systemNavigationBarIconBrightness: Brightness.light,
-    ));
+    // Set system chrome navigation bar color based on theme
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarColor: isDark ? const Color(0xFF222831) : const Color(0xFFF8F9FA),
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark ? const Color(0xFF222831) : const Color(0xFFF8F9FA),
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      ));
+    });
   }
 
   Future<void> _signIn() async {
@@ -421,13 +424,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _setupScreens();
     // Set user as online when app starts
     SupabaseService.setOnlineStatus(true);
-    // Set system chrome navigation bar color
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Color(0xFF222831),
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF222831),
-      systemNavigationBarIconBrightness: Brightness.light,
-    ));
+    // Set system chrome navigation bar color based on theme
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarColor: isDark ? const Color(0xFF222831) : const Color(0xFFF8F9FA),
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark ? const Color(0xFF222831) : const Color(0xFFF8F9FA),
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      ));
+    });
   }
 
   @override
