@@ -8,6 +8,7 @@ import 'dart:async';
 import 'models.dart';
 import 'services.dart';
 import 'screens.dart';
+import 'bot_builder.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,54 +26,108 @@ void main() async {
 class SecumeApp extends StatelessWidget {
   const SecumeApp({super.key});
 
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      primaryColor: const Color(0xFF00ADB5),
+      scaffoldBackgroundColor: const Color(0xFF222831),
+      colorScheme: const ColorScheme.dark(
+        primary: Color(0xFF00ADB5),
+        secondary: Color(0xFF00ADB5),
+        surface: Color(0xFF393E46),
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Color(0xFFEEEEEE),
+        error: Color(0xFFFF6B6B),
+      ),
+      fontFamily: 'Manrope',
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Color(0xFFEEEEEE), fontSize: 16),
+        bodyMedium: TextStyle(color: Color(0xFFEEEEEE)),
+        titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEEEEEE)),
+        titleMedium: TextStyle(fontWeight: FontWeight.w600),
+        labelLarge: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF222831),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 22.0,
+          fontFamily: 'Manrope',
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFEEEEEE),
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Color(0xFF222831),
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: Color(0xFF222831),
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      ),
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: Color(0xFF222831),
+      ),
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      primaryColor: const Color(0xFF00ADB5),
+      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF00ADB5),
+        secondary: Color(0xFF00ADB5),
+        surface: Color(0xFFFFFFFF),
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Color(0xFF1A1A1A),
+        error: Color(0xFFD32F2F),
+      ),
+      fontFamily: 'Manrope',
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Color(0xFF1A1A1A), fontSize: 16),
+        bodyMedium: TextStyle(color: Color(0xFF1A1A1A)),
+        titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+        titleMedium: TextStyle(fontWeight: FontWeight.w600),
+        labelLarge: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFFF8F9FA),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 22.0,
+          fontFamily: 'Manrope',
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF1A1A1A),
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Color(0xFFF8F9FA),
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Color(0xFFF8F9FA),
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      ),
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: Color(0xFFF8F9FA),
+      ),
+      cardTheme: const CardTheme(
+        color: Color(0xFFFFFFFF),
+        elevation: 2,
+        shadowColor: Color(0x1A000000),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Secume',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF00ADB5),
-        scaffoldBackgroundColor: const Color(0xFF222831),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF00ADB5),
-          secondary: Color(0xFF00ADB5),
-          background: Color(0xFF222831),
-          surface: Color(0xFF393E46),
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
-          onBackground: Color(0xFFEEEEEE),
-          onSurface: Color(0xFFEEEEEE),
-          error: Color(0xFFFF6B6B),
-        ),
-        fontFamily: 'Manrope',
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFFEEEEEE), fontSize: 16),
-          bodyMedium: TextStyle(color: Color(0xFFEEEEEE)),
-          titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEEEEEE)),
-          titleMedium: TextStyle(fontWeight: FontWeight.w600),
-          labelLarge: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF222831),
-          elevation: 0,
-          scrolledUnderElevation: 0, // Fix scrolling elevation issue
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            fontSize: 22.0,
-            fontFamily: 'Manrope',
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFEEEEEE),
-          ),
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Color(0xFF222831),
-            statusBarIconBrightness: Brightness.light,
-            systemNavigationBarColor: Color(0xFF222831),
-            systemNavigationBarIconBrightness: Brightness.light,
-          ),
-        ),
-        drawerTheme: const DrawerThemeData(
-          backgroundColor: Color(0xFF222831),
-        ),
-      ),
+      theme: _buildLightTheme(),
+      darkTheme: _buildDarkTheme(),
+      themeMode: ThemeMode.system, // Follow system theme
       debugShowCheckedModeBanner: false,
       home: StreamBuilder<AuthState>(
         stream: Supabase.instance.client.auth.onAuthStateChange,
@@ -321,19 +376,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 // Helper widget for text fields on auth screens
 Widget _buildTextField({required String hint, TextEditingController? controller, bool obscure = false}) {
-  return TextField(
-    controller: controller,
-    obscureText: obscure,
-    decoration: InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: const Color(0xFF393E46),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    ),
+  return Builder(
+    builder: (context) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          hintText: hint,
+          filled: true,
+          fillColor: isDark ? const Color(0xFF393E46) : const Color(0xFFF5F5F5),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      );
+    },
   );
 }
 
@@ -479,10 +539,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       null,
       FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateBotScreen()),
-          ).then((_) => setState(() {}));
+                  Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VisualBotBuilderScreen()),
+        ).then((_) => setState(() {}));
         },
         backgroundColor: Theme.of(context).primaryColor,
         child: Container(
@@ -610,11 +670,12 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: 120,
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF222831), // Use same background color as sidebar
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF222831) : const Color(0xFFF8F9FA),
       ),
       child: Row(
         children: [
@@ -662,16 +723,16 @@ class AppDrawer extends StatelessWidget {
               children: [
                 Text(
                   user.fullName,
-                  style: const TextStyle(
-                    color: Color(0xFFEEEEEE),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFEEEEEE) : const Color(0xFF1A1A1A),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   '@${user.username}',
-                  style: const TextStyle(
-                    color: Color(0xFFAAAAAA),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFAAAAAA) : const Color(0xFF6B6B6B),
                     fontSize: 14,
                   ),
                 ),
@@ -698,12 +759,12 @@ class AppDrawer extends StatelessWidget {
       child: ListTile(
         leading: customIcon ?? Icon(
           isSelected ? selectedIcon : icon,
-          color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400],
+          color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600]),
         ),
         title: Text(
           text,
           style: TextStyle(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300],
+            color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),

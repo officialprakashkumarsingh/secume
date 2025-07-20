@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_js/flutter_js.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'models.dart';
@@ -911,7 +910,7 @@ class SupabaseService {
   }
 
   // Bot management
-  static Future<Bot?> createBot(String name, String username, String jsCode, {String? description, bool isPublic = true}) async {
+  static Future<Bot?> createBot(String name, String username, String jsonConfig, {String? description, bool isPublic = true}) async {
     try {
       final currentUser = _client.auth.currentUser;
       if (currentUser == null) return null;
@@ -921,7 +920,7 @@ class SupabaseService {
         'username': username,
         'description': description,
         'creator_id': currentUser.id,
-        'js_code': jsCode,
+        'json_config': jsonConfig,
         'is_public': isPublic,
         'created_at': DateTime.now().toIso8601String(),
       }).select().single();
@@ -951,12 +950,12 @@ class SupabaseService {
     }
   }
 
-  static Future<Bot?> updateBot(String botId, {String? name, String? description, String? jsCode, bool? isPublic}) async {
+  static Future<Bot?> updateBot(String botId, {String? name, String? description, String? jsonConfig, bool? isPublic}) async {
     try {
       final updateData = <String, dynamic>{};
       if (name != null) updateData['name'] = name;
       if (description != null) updateData['description'] = description;
-      if (jsCode != null) updateData['js_code'] = jsCode;
+      if (jsonConfig != null) updateData['json_config'] = jsonConfig;
       if (isPublic != null) updateData['is_public'] = isPublic;
 
       final response = await _client
@@ -1025,127 +1024,189 @@ class SupabaseService {
   }
 }
 
-// --- Bot JavaScript Engine ---
+// --- Visual Bot Engine (JSON-based) ---
 
 class BotEngine {
-  static final JavascriptRuntime _jsRuntime = getJavascriptRuntime();
-
   static Future<String> processBotMessage(Bot bot, String userMessage, String chatId) async {
     try {
-      // Properly encode UTF-8 content
-      final utf8Message = utf8.encode(userMessage);
-      final encodedMessage = utf8.decode(utf8Message);
-
-      // Enhanced JavaScript context with async support
-      final jsCode = '''
-        ${bot.jsCode}
-        
-        // Enhanced context for bot execution
-        var context = {
-          chatId: '$chatId',
-          timestamp: ${DateTime.now().millisecondsSinceEpoch},
-          userMessage: ${json.encode(encodedMessage)}
-        };
-        
-        // Execute bot logic with better error handling
-        var result;
-        try {
-          if (typeof processMessage === 'function') {
-            result = processMessage(context.userMessage, context.chatId, context);
-          } else {
-            result = 'Bot error: processMessage function not found. Please check your bot code.';
-          }
-        } catch (botError) {
-          result = 'Bot runtime error: ' + botError.toString();
-        }
-        
-        // Ensure proper result formatting
-        if (result === null || result === undefined) {
-          'Bot processed your message but returned no response.';
-        } else if (typeof result === 'object') {
-          try {
-            JSON.stringify(result);
-          } catch (jsonError) {
-            'Bot returned an object that could not be converted to text.';
-          }
-        } else {
-          String(result);
-        }
-      ''';
-
-      final result = await _jsRuntime.evaluateAsync(jsCode);
-
-      if (result.isError) {
-        return 'Bot execution failed: ${result.rawResult}';
-      }
-
-      String response = result.stringResult;
-
-      // Handle problematic responses
-      if (response.isEmpty || 
-          response == 'null' || 
-          response == 'undefined' ||
-          response == '{}' ||
-          response.trim().isEmpty) {
-        return 'Hello! I received your message but I\'m not sure how to respond. Could you try asking me something else?';
-      }
-
-      // Clean up response
-      response = response.trim();
-
-      // Ensure UTF-8 compatibility for response
+      // Parse bot configuration from JSON
+      Map<String, dynamic> botConfig;
       try {
-        final utf8Response = utf8.encode(response);
-        response = utf8.decode(utf8Response);
+        botConfig = json.decode(bot.jsonConfig);
       } catch (e) {
-        // If UTF-8 encoding fails, keep original response
+        return 'Bot configuration error. Please check the bot setup.';
       }
 
-      return response;
+      final message = userMessage.toLowerCase().trim();
+      
+      // Process through bot rules
+      final rules = botConfig['rules'] as List<dynamic>? ?? [];
+      
+      for (final rule in rules) {
+        final ruleMap = rule as Map<String, dynamic>;
+        final triggers = (ruleMap['triggers'] as List<dynamic>?)?.cast<String>() ?? [];
+        final response = ruleMap['response'] as String? ?? '';
+        final type = ruleMap['type'] as String? ?? 'contains';
+        
+        bool triggered = false;
+        
+        for (final trigger in triggers) {
+          switch (type) {
+            case 'exact':
+              triggered = message == trigger.toLowerCase();
+              break;
+            case 'starts_with':
+              triggered = message.startsWith(trigger.toLowerCase());
+              break;
+            case 'ends_with':
+              triggered = message.endsWith(trigger.toLowerCase());
+              break;
+            case 'contains':
+            default:
+              triggered = message.contains(trigger.toLowerCase());
+              break;
+          }
+          
+          if (triggered) break;
+        }
+        
+        if (triggered) {
+          return _processResponse(response, userMessage, chatId);
+        }
+      }
+      
+      // Default response if no rules match
+      final defaultResponse = botConfig['default_response'] as String? ?? 
+          'I received your message but I\'m not sure how to respond. Could you try asking me something else?';
+      
+      return _processResponse(defaultResponse, userMessage, chatId);
     } catch (e) {
       return 'I encountered an error: ${e.toString()}. Please try again or contact the bot creator.';
     }
   }
 
-  // Enhanced bot creation with default templates
-  static String getDefaultBotCode() {
-    return '''
-function processMessage(userMessage, chatId, context) {
-  // Enhanced bot template with UTF-8 support
-  const message = userMessage.toLowerCase();
-  
-  if (message.includes('hello') || message.includes('hi')) {
-    return 'Hello! 👋 How can I help you today?';
+  static String _processResponse(String response, String userMessage, String chatId) {
+    // Replace placeholders in response
+    final now = DateTime.now();
+    
+    return response
+        .replaceAll('{user_message}', userMessage)
+        .replaceAll('{time}', now.toString().substring(11, 19))
+        .replaceAll('{date}', now.toString().substring(0, 10))
+        .replaceAll('{timestamp}', now.millisecondsSinceEpoch.toString());
   }
-  
-  if (message.includes('time')) {
-    const now = new Date(context.timestamp);
-    return 'Current time: ' + now.toLocaleTimeString() + ' 🕒';
+
+  // Get default bot configuration in JSON format  
+  static String getDefaultBotConfig() {
+    final defaultConfig = {
+      'type': 'visual_bot',
+      'version': '1.0',
+      'rules': [
+        {
+          'id': 'greeting',
+          'name': 'Greeting',
+          'triggers': ['hello', 'hi', 'hey', 'greetings'],
+          'type': 'contains',
+          'response': 'Hello! 👋 How can I help you today?'
+        },
+        {
+          'id': 'time',
+          'name': 'Time Request',
+          'triggers': ['time', 'what time'],
+          'type': 'contains',
+          'response': 'Current time: {time} 🕒'
+        },
+        {
+          'id': 'date',
+          'name': 'Date Request',
+          'triggers': ['date', 'today', 'what date'],
+          'type': 'contains',
+          'response': 'Today is: {date} 📅'
+        },
+        {
+          'id': 'help',
+          'name': 'Help Request',
+          'triggers': ['help', 'what can you do', 'commands'],
+          'type': 'contains',
+          'response': 'I can help you with:\n• Greetings (say hello)\n• Time & date info\n• Echo messages\n• Basic conversations! 🤖'
+        }
+      ],
+      'default_response': 'You said: "{user_message}" 💬\n\nTry saying "help" to see what I can do!'
+    };
+    
+    return json.encode(defaultConfig);
   }
-  
-  if (message.includes('date')) {
-    const now = new Date(context.timestamp);
-    return 'Today is: ' + now.toLocaleDateString() + ' 📅';
-  }
-  
-  if (message.includes('calculator') || message.includes('calculate')) {
-    return 'I can help with calculations! Try: "calculate 2+2" 🧮';
-  }
-  
-  if (message.includes('calculate ')) {
-    try {
-      const expression = message.replace('calculate ', '');
-      // Simple math evaluation (safe for basic operations)
-      const result = eval(expression.replace(/[^0-9+\\-*/.() ]/g, ''));
-      return 'Result: ' + result + ' ✨';
-    } catch (e) {
-      return 'Sorry, I couldn\\'t calculate that. Try simple math like "2+2" 🤔';
-    }
-  }
-  
-  // Echo response with emoji
-  return 'You said: "' + userMessage + '" 💬';
-}
-''';
+
+  // Bot configuration templates
+  static Map<String, Map<String, dynamic>> getBotTemplates() {
+    return {
+      'echo_bot': {
+        'name': 'Echo Bot',
+        'description': 'Repeats what users say',
+        'config': {
+          'type': 'visual_bot',
+          'version': '1.0',
+          'rules': [],
+          'default_response': 'Echo: {user_message}'
+        }
+      },
+      'info_bot': {
+        'name': 'Info Bot',
+        'description': 'Provides time, date, and basic info',
+        'config': {
+          'type': 'visual_bot',
+          'version': '1.0',
+          'rules': [
+            {
+              'id': 'time',
+              'name': 'Time',
+              'triggers': ['time'],
+              'type': 'contains',
+              'response': 'Current time: {time} 🕒'
+            },
+            {
+              'id': 'date',
+              'name': 'Date',
+              'triggers': ['date'],
+              'type': 'contains',
+              'response': 'Today is: {date} 📅'
+            }
+          ],
+          'default_response': 'Ask me about time or date!'
+        }
+      },
+      'chatbot': {
+        'name': 'AI Chatbot Template',
+        'description': 'Advanced conversational bot template',
+        'config': {
+          'type': 'visual_bot',
+          'version': '1.0',
+          'rules': [
+            {
+              'id': 'greeting',
+              'name': 'Greetings',
+              'triggers': ['hello', 'hi', 'hey'],
+              'type': 'contains',
+              'response': 'Hello! I\'m an AI assistant. How can I help you today? 🤖'
+            },
+            {
+              'id': 'goodbye',
+              'name': 'Goodbye',
+              'triggers': ['bye', 'goodbye', 'see you'],
+              'type': 'contains',
+              'response': 'Goodbye! Have a great day! 👋'
+            },
+            {
+              'id': 'name',
+              'name': 'Name Question',
+              'triggers': ['what is your name', 'who are you'],
+              'type': 'contains',
+              'response': 'I\'m a chatbot created with Secume\'s bot builder! 🤖'
+            }
+          ],
+          'default_response': 'That\'s interesting! Tell me more about that. 💭'
+        }
+      }
+    };
   }
 }
